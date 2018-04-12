@@ -20,9 +20,9 @@ const UIController = (function() {
                 description : document.querySelector( DOMstrings.inputDescription).value,
                 value : document.querySelector(DOMstrings.inputValue).value
             }
-        }
+        },
         getDOMstrings: function() {
-            return: DOMstrings;
+            return DOMstrings;
         }
     }
 
@@ -31,7 +31,7 @@ const UIController = (function() {
 //GLOBAL APP CONTROLLER
 const controller = (function(budgetCtrl, UICtrl) {
 
-    const DOM = UI.Ctrl.getDOMstrings();
+    const DOM = UICtrl.getDOMstrings();
 
     const ctrlAddItem = function() {
         //Get the input data
@@ -46,7 +46,7 @@ const controller = (function(budgetCtrl, UICtrl) {
         //Display budget in UI
 
     }
-    document.querySelector(DOMstrings.inputBtn).addEventListener('click', ctrlAddItem);
+    document.querySelector(DOM.inputBtn).addEventListener('click', ctrlAddItem);
 
     document.addEventListener('keypress', function(event) {
         if(event.keyCode ===13 || event.which === 13) {
