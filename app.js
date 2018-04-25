@@ -238,7 +238,6 @@ const controller = (function(budgetCtrl, UICtrl) {
     const ctrlDeleteItem = function(event) {
         console.log(event.target.parentNode.parentNode.parentNode.parentNode);
 
-
     }
     return {
         init: function() {
