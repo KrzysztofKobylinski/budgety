@@ -145,7 +145,8 @@ const UIController = (function() {
         expensesLabel: '.budget__expenses--value',
         percentageLabel: '.budget__expenses--percentage',
         container: '.container',
-        expensesPercentageLabel: '.item__percentage'
+        expensesPercentageLabel: '.item__percentage',
+        dateLabel: '.budget__title--month'
     };
 
     const formatNumber = function(num, type) {
@@ -164,6 +165,13 @@ const UIController = (function() {
         }
 
         return (type === 'exp' ? '-' : '+') + ' ' + int +'.'+ dec + ' PLN';
+    };
+
+    let nodeListForEach = function(list, callback) {
+        for (let i=0; i<list.length; i++) {
+            callback(list[i], i)
+        }
+            
     };
 
     return {
@@ -197,8 +205,6 @@ const UIController = (function() {
 
             //insert html to DOM
             document.querySelector(element).insertAdjacentHTML('beforeend', newHtml);
-
-
         },
 
         deleteListItem: function(selectorID, ){
@@ -241,12 +247,6 @@ const UIController = (function() {
         displayPercentage: function(percentages) {
             let fields = document.querySelectorAll(DOMstrings.expensesPercentageLabel);
 
-            let nodeListForEach = function(list, callback) {
-                for (let i=0; i<list.length; i++) {
-                    callback(list[i], i)
-                }
-                    
-            };
 
             nodeListForEach(fields, function(current, index){
                 if (percentages[index] > 0) {
@@ -257,6 +257,29 @@ const UIController = (function() {
 
 
             });
+        },
+
+        displayMonth: function() {
+            let now, months, month, year;
+            now = new Date();
+            year = now.getFullYear();
+            months = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', "Grudzień"];
+
+            month = now.getMonth();
+
+
+            document.querySelector(DOMstrings.dateLabel).textContent = months[month] + ' ' + year;
+        
+
+        },
+
+        changeType: function() {
+            var fields = document.querySelectorAll(
+                DOMstrings.inputType + ',' + DOMstrings.inputDescription + ',' + DOMstrings.inputValue);
+            nodeListForEach(fields, function(cur){
+                cur.classList.toggle('red-focus');
+            });
+            document.querySelector(DOMstrings.inputBtn).classList.toggle('red');
         },
 
         getDOMstrings: function() {
@@ -281,6 +304,7 @@ const controller = (function(budgetCtrl, UICtrl) {
             }
         });
         document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem);
+        document.querySelector(DOM.inputType).addEventListener('change', UICtrl.changeType);
     };
 
     const updateBudget = function() {
@@ -339,6 +363,7 @@ const controller = (function(budgetCtrl, UICtrl) {
     return {
         init: function() {
             console.log('Application has started');
+            UICtrl.displayMonth();
             UICtrl.displayBudget({
                 budget: 0,
                 totalInc: 0,
