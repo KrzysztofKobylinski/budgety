@@ -398,3 +398,11 @@ const controller = (function(budgetCtrl, UICtrl) {
 
 //starts app
 controller.init();
+
+//random background photo feature
+function background() {
+    let width = window.screen.availWidth;
+    let link = "url(https://picsum.photos/"+ width + "/300/?random)";
+    document.querySelector('.top').style.setProperty("background-image", link);
+    };
+background();
