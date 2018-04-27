@@ -56,6 +56,18 @@ const budgetController = (function(){
             return newItem;
         },
 
+        deleteItem: function(type, id) {
+            let ids, index;
+            ids = data.allItems[type].map(function(current) {
+                return current.id;
+            });
+            index = ids.indexOf(id);
+
+            if(index !== -1) {
+                data.allItems[type].splice(index, 1);
+            }
+        },
+
         calculateBudget: function() {
 
             //calculate total income and exp
@@ -127,11 +139,11 @@ const UIController = (function() {
             if (type === 'inc') {
                 element = DOMstrings.incomeContainer;
 
-                html = '<div class="item clearfix" id="%id%">  <div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = '<div class="item clearfix" id="inc-%id%">  <div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
             } else if (type === 'exp') {
                 element = DOMstrings.expenseContainer;
                 
-                html = '<div class="item clearfix" id="%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
             }
 
             //replace the placeholder txt with actual data
@@ -142,6 +154,12 @@ const UIController = (function() {
             //insert html to DOM
             document.querySelector(element).insertAdjacentHTML('beforeend', newHtml);
 
+
+        },
+
+        deleteListItem: function(selectorID, ){
+            let el = document.getElementById(selectorID);
+            el.parentNode.removeChild(el);
 
         },
 
@@ -236,9 +254,25 @@ const controller = (function(budgetCtrl, UICtrl) {
     };
 
     const ctrlDeleteItem = function(event) {
-        console.log(event.target.parentNode.parentNode.parentNode.parentNode);
+        let itemID, splitID, type, ID;
+        itemID =  event.target.parentNode.parentNode.parentNode.parentNode.id;
+        //not the best solution, relying on DOM structure
 
-    }
+        if(itemID) {
+            splitID = itemID.split('-');
+            type = splitID[0];
+            ID = parseInt(splitID[1]);
+
+            //delete item from controller
+            budgetCtrl.deleteItem(type, ID);
+            //delete item from UI
+            UICtrl.deleteListItem(itemID);
+            //update
+
+        }
+
+    };
+
     return {
         init: function() {
             console.log('Application has started');
