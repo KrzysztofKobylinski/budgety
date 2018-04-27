@@ -1,6 +1,7 @@
 //budget controller
 const budgetController = (function(){
 
+    //default model of expense item
     const Expense = function(id, description, value) {
         this.id = id;
         this.description = description;
@@ -8,24 +9,28 @@ const budgetController = (function(){
         this.percentage = -1;
     };
 
-    Expense.prototype.calculatePercentage = function(totalIncome) {
-        if (totalIncome >0) {
-            this.percentage = Math.round((this.value / totalIncome)*100);
-        } else {
-            this.percentage = -1;
-        }
-    };
+        //prototype method for Expense. Calculates percentage based on value of item and totalIncome
+        Expense.prototype.calculatePercentage = function(totalIncome) {
+            if (totalIncome >0) {
+                this.percentage = Math.round((this.value / totalIncome)*100);
+            } else {
+                this.percentage = -1;
+            }
+        };
 
-    Expense.prototype.getPercentage = function() {
-        return this.percentage;
-    };
+        //returns updated percentage
+        Expense.prototype.getPercentage = function() {
+            return this.percentage;
+        };
 
+    //default model of income item
     const Income = function(id, description, value) {
         this.id = id;
         this.description = description;
         this.value = value;
     };
 
+    //calculates total sum of each type(inc/exp)
     const calculateTotal = function(type) {
         let sum = 0;
         data.allItems[type].forEach(function(cur) 
@@ -36,6 +41,7 @@ const budgetController = (function(){
 
     };
 
+    //defaul model for all data structure
     const data = {
         allItems: {
             exp: [],
@@ -49,7 +55,10 @@ const budgetController = (function(){
         percentage: -1
     }; 
 
+    //what is public from budgetController:
     return {
+
+        //adds item based on type, with new ID, and pushing it into data object
         addItem: function(type, des, val) {
             let newItem, ID;
             //creating new ID
@@ -70,6 +79,7 @@ const budgetController = (function(){
             return newItem;
         },
 
+        //deletes item based on type and id
         deleteItem: function(type, id) {
             let ids, index;
             ids = data.allItems[type].map(function(current) {
@@ -82,28 +92,31 @@ const budgetController = (function(){
             }
         },
 
+        //calculates total inc, total exp, total budget, total percentage
         calculateBudget: function() {
             //calculate total income and exp
             calculateTotal('exp');
             calculateTotal('inc');
 
-            //cal budget: inc - exp
+            //calculates total budget: totals.inc - totals.exp
             data.budget = data.totals.inc - data.totals.exp;
 
-            //cal the percentage
+            //calculates total percentage (totals.exp/totals.inc)
             if (data.totals.inc >0) {
                 data.percentage = Math.round((data.totals.exp / data.totals.inc)*100);
             } else {
                 data.percentage = -1;
             }
         },
-         
+        
+        //calculates percentage for every exp based on total income
         calculatePercentage: function() {
             data.allItems.exp.forEach(function(cur){
                 cur.calculatePercentage(data.totals.inc);
             });
         },
 
+        //calculates percentage for every data.allItems.exp object
         getPercentage: function() {
             let allPerc = data.allItems.exp.map(function(cur) {
                 return cur.getPercentage();
@@ -111,6 +124,7 @@ const budgetController = (function(){
             return allPerc;
         },
 
+        //returns budget object(budget, totalInc, totalExp, percentage)
         getBudget: function() {
             return {
                 budget: data.budget,
@@ -118,21 +132,16 @@ const budgetController = (function(){
                 totalExp: data.totals.exp,
                 percentage: data.percentage
             }
-        },
-
-        testing: function() {
-            console.log(data);
         }
     }
 })();
 
 
 
-
-
 //UI CONTROLLER
 const UIController = (function() {
 
+    //DOMstrings to simplify names
     const DOMstrings = {
         inputType: '.add__type',
         inputDescription: '.add__description',
@@ -149,6 +158,7 @@ const UIController = (function() {
         dateLabel: '.budget__title--month'
     };
 
+    //to make numbers look pretty (space in thousands, dot for decimals, 2 decimals)
     const formatNumber = function(num, type) {
         let numSplit, int, dec;
 
@@ -161,12 +171,13 @@ const UIController = (function() {
         dec = numSplit[1];
 
         if (int.length > 3) {
-            int = int.substr(0, int.length -3 ) + ',' + int.substr(int.length -3,int.length);
+            int = int.substr(0, int.length -3 ) + ' ' + int.substr(int.length -3,int.length);
         }
 
         return (type === 'exp' ? '-' : '+') + ' ' + int +'.'+ dec + ' PLN';
     };
 
+    //forEach function for nodelist, because there is no forEach method for nodeList
     let nodeListForEach = function(list, callback) {
         for (let i=0; i<list.length; i++) {
             callback(list[i], i)
@@ -174,17 +185,18 @@ const UIController = (function() {
             
     };
 
+    //what is public from UIController function
     return {
+        //gets input: type, description and value (as number)
         getInput: function() {
             return {
-                type : document.querySelector(
-                    DOMstrings.inputType).value, 
-                    // receives inc or exp
-                description : document.querySelector( DOMstrings.inputDescription).value,
-                value : parseFloat(document.querySelector(DOMstrings.inputValue).value)
+                type : document.querySelector(DOMstrings.inputType).value, 
+                description : document.querySelector(DOMstrings.inputDescription).value,
+                value : parseFloat(document.querySelector(DOMstrings.inputValue).value) //convert string to number
             }
         },
 
+        //adds item as based on type (inc/exp), with actual data; obj is item(object), type(inc/exp)
         addListItem: function(obj, type) {
             let html, newHtml;
             //create html string with 
@@ -203,16 +215,18 @@ const UIController = (function() {
             newHtml = newHtml.replace('%description%',obj.description);
             newHtml = newHtml.replace('%value%',formatNumber(obj.value, type));
 
-            //insert html to DOM
+            //insert newhtml to DOM
             document.querySelector(element).insertAdjacentHTML('beforeend', newHtml);
         },
 
-        deleteListItem: function(selectorID, ){
+        //removes item with selectorID
+        deleteListItem: function(selectorID){
             let el = document.getElementById(selectorID);
             el.parentNode.removeChild(el);
 
         },
 
+        //clears input fields, and focuses on description
         clearFields: function() {
             let fields, fieldsArr;
 
@@ -228,6 +242,7 @@ const UIController = (function() {
 
         },
 
+        //after input: object, checks type, and shows total budget, totalInc, totalExp, percentage
         displayBudget: function(obj) {
             let type;
             obj.budget > 0 ? type='inc' : type='exp';
@@ -235,7 +250,6 @@ const UIController = (function() {
             document.querySelector(DOMstrings.incomeLabel).textContent = formatNumber(obj.totalInc, 'inc');
             document.querySelector(DOMstrings.expensesLabel).textContent = formatNumber(obj.totalExp, 'exp');
            
-
             if (obj.percentage >0) {
                 document.querySelector(DOMstrings.percentageLabel).textContent = obj.percentage + '%';
             } else {
@@ -244,21 +258,21 @@ const UIController = (function() {
 
         },
 
+        //shows percentage for every item
         displayPercentage: function(percentages) {
             let fields = document.querySelectorAll(DOMstrings.expensesPercentageLabel);
 
-
+            //checks if is able to calculate %, and displays it
             nodeListForEach(fields, function(current, index){
                 if (percentages[index] > 0) {
                     current.textContent = percentages[index] + '%';
                 } else {
                     current.textContent = '---';
                 }
-
-
             });
         },
 
+        //display actual month + year, based on array on months
         displayMonth: function() {
             let now, months, month, year;
             now = new Date();
@@ -267,12 +281,12 @@ const UIController = (function() {
 
             month = now.getMonth();
 
-
             document.querySelector(DOMstrings.dateLabel).textContent = months[month] + ' ' + year;
         
 
         },
 
+        //based on type(inc/exp) changing style of input fields(color)
         changeType: function() {
             var fields = document.querySelectorAll(
                 DOMstrings.inputType + ',' + DOMstrings.inputDescription + ',' + DOMstrings.inputValue);
@@ -282,6 +296,7 @@ const UIController = (function() {
             document.querySelector(DOMstrings.inputBtn).classList.toggle('red');
         },
 
+        //returns DOMstrings for global app controller
         getDOMstrings: function() {
             return DOMstrings;
         }
@@ -290,11 +305,11 @@ const UIController = (function() {
 
 
 
-
-
-//GLOBAL APP CONTROLLER - comunication between budgetController & UIController
+//GLOBAL APP CONTROLLER - communication between budgetController & UIController
 const controller = (function(budgetCtrl, UICtrl) {
     
+
+    //set's up DOM event listeners(click, enter) to ctrlAddItem(), ctrlDeleteItem() and UICtrl.changeType(inc/exp => color)
     const setupEventListeners = function() {
         const DOM = UICtrl.getDOMstrings();
         document.querySelector(DOM.inputBtn).addEventListener('click', ctrlAddItem);
@@ -307,6 +322,7 @@ const controller = (function(budgetCtrl, UICtrl) {
         document.querySelector(DOM.inputType).addEventListener('change', UICtrl.changeType);
     };
 
+    //calculating budget again, making new budget and displaying it
     const updateBudget = function() {
         // Calculate full budget
         budgetCtrl.calculateBudget();
@@ -316,6 +332,7 @@ const controller = (function(budgetCtrl, UICtrl) {
         UICtrl.displayBudget(budget);
     };
 
+    //calculating percentage, making new percentage and displaying it
     const updatePercentage = function() {
         //calculate percentage
         budgetCtrl.calculatePercentage();
@@ -326,6 +343,7 @@ const controller = (function(budgetCtrl, UICtrl) {
 
     };
 
+    //set's up sequence of functions after adding item
     const ctrlAddItem = function() {
         let input, newItem;
         //Get the input data
@@ -343,6 +361,7 @@ const controller = (function(budgetCtrl, UICtrl) {
         }
     };
 
+    //set's up sequence of functions after deleting item
     const ctrlDeleteItem = function(event) {
         let itemID, splitID, type, ID;
         itemID =  event.target.parentNode.parentNode.parentNode.parentNode.id;
@@ -360,7 +379,9 @@ const controller = (function(budgetCtrl, UICtrl) {
         }
     };
 
+    //what is public 
     return {
+        //default display of date, budget object, and eventlisteners
         init: function() {
             console.log('Application has started');
             UICtrl.displayMonth();
@@ -375,4 +396,5 @@ const controller = (function(budgetCtrl, UICtrl) {
     }
 })(budgetController, UIController);
 
+//starts app
 controller.init();
